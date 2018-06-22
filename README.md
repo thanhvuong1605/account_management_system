@@ -23,7 +23,7 @@ pip install fabric
 python app.py
 ```
 
-##Import accounts.json to MongoDB
+## Import accounts.json to MongoDB
 ```bash
 mongoimport --db accounts --collection account --file accounts.json
 ```
