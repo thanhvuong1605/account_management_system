@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+    <title>Account manage system</title>
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="static/css/jumbotron-narrow.css" rel="stylesheet">
+    <script src="static/js/angular.js"></script>
+    <script>
+    angular.module('myApp', []).controller('HomeCtrl', function($scope, $http) {
+				$scope.info = {};
+				$scope.showAdd = true;
+
+        //function for getting list of accounts
+				$scope.showlist = function(){
+					$http({
+						method: 'GET',
+						url: '/getAccountList',
+					}).then(function(response) {
+						$scope.accounts = response.data;
+						console.log('mm',$scope.accounts);
+					}, function(error) {
+						console.log(error);
+					});
+				}
+
+        //function for adding new account
+      	$scope.addAccount = function(){
+					$http({
+						method: 'POST',
+						url: '/addAccount',
+						data: {info:$scope.info}
+					}).then(function(response) {
+						$scope.showlist();
+						$('#addPopUp').modal('hide')
+						$scope.info = {}
+					}, function(error) {
+						console.log(error);
+					});
+				}
+
+        //popup buttom
+        $scope.showAddPopUp = function(){
+					$scope.showAdd = true;
+					$scope.info = {};
+					$('#addPopUp').modal('show')
+				}
+
+        //Open popup window with data of an account based on its id
+				$scope.editAccount = function(id){
+					$scope.info.id = id;
+					$scope.showAdd = false;
+					$http({
+						method: 'POST',
+						url: '/getAccount',
+						data: {id:$scope.info.id}
+					}).then(function(response) {
+						console.log(response);
+						$scope.info = response.data;
+						$('#addPopUp').modal('show')
+					}, function(error) {
+						console.log(error);
+					});
+				}
+
+        //update account based on id
+				$scope.updateAccount = function(id){
+					$http({
+						method: 'POST',
+						url: '/updateAccount',
+						data: {info:$scope.info}
+					}).then(function(response) {
+						console.log(response.data);
+						$scope.showlist();
+						$('#addPopUp').modal('hide')
+					}, function(error) {
+						console.log(error);
+					});
+				}
+
+        //function for deleting account
+				$scope.confirmDelete = function(id){
+					$scope.deleteAccountID = id;
+					$('#deleteConfirm').modal('show');
+				}
+
+				$scope.deleteAccount = function(){
+					$http({
+						method: 'POST',
+						url: '/deleteAccount',
+						data: {id:$scope.deleteAccountID}
+					}).then(function(response) {
+						console.log(response.data);
+						$scope.deleteAccountID = '';
+						$scope.showlist();
+						$('#deleteConfirm').modal('hide')
+					}, function(error) {
+						console.log(error);
+					});
+				}
+
+				$scope.showlist();
+
+        //click to set order
+        $scope.orderByMe = function(account) {
+          $scope.myOrderBy = account;
+        }
+
+
+    })
+    </script>
+</head>
+
+<body ng-controller="HomeCtrl">
+    <div class="container">
+        <div class="header clearfix">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="#" data-toggle="modal" ng-click="showAddPopUp()" >Add</a></li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">Account Manager</h3>
+        </div>
+        <div class="bs-example" data-example-id="panel-without-body-with-table">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Account list</h4></div>
+                <div class="panel-heading">
+                  <h4> Search </h4>
+                  <h5>Global:<input type="text" ng-model="search.$"></h5>
+                  <h5>Account:<input type="text" ng-model="search.account_number"></h5>
+                  <h5>Balance:<input ng-model="search.balance" type="number"></h5>
+                  <h5>Firstname:<input type="text" ng-model="search.firstname"></h5>
+                  <h5>Lastname:<input type="text" ng-model="search.lastname"></h5>
+                  <h5>Age:<input type="number" ng-model="search.age" value=""></h5>
+                  <h5>
+                    Gender:
+                    <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="inlineFormCustomSelect" ng-model="search.gender">
+                      <option selected value="">Choose...</option>
+                      <option value="M">M</option>
+                      <option value="F">F</option>
+                    </select>
+                  </h5>
+                  <h5>Address:<input type="text" ng-model="search.address"></h5>
+                  <h5>Employer:<input type="text" ng-model="search.employer"></h5>
+                  <h5>Email:<input type="email" ng-model="search.email"></h5>
+                  <h5>City:<input type="text" ng-model="search.city"></h5>
+                  <h5>State:<input type="text" ng-model="search.state"></h5>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th ng-click ="orderByMe('account_number')">#</th>
+                            <th ng-click ="orderByMe('balance')">Balance</th>
+                            <th ng-click ="orderByMe('firstname')">First Name</th>
+                            <th ng-click ="orderByMe('lastname')">Last Name</th>
+                            <th ng-click ="orderByMe('age')">Age</th>
+                            <th ng-click ="orderByMe('gender')">Gender</th>
+                            <th ng-click ="orderByMe('address')">Address</th>
+                            <th ng-click ="orderByMe('employer')">Employer</th>
+                            <th ng-click ="orderByMe('email')">Email</th>
+                            <th ng-click ="orderByMe('city')">City</th>
+                            <th ng-click ="orderByMe('state')">State</th>
+							              <th></th>
+							              <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="account in accounts | orderBy:myOrderBy  | filter:search">
+                            <td>{{'{{account.account_number}}'}}</td>
+                            <td>{{ '{{account.balance}}' }}</td>
+                            <td>{{ '{{account.firstname}}' }}</td>
+                            <td> {{'{{account.lastname}}'}}</td>
+                            <td>{{'{{account.age}}'}}</td>
+                            <td>{{'{{account.gender}}'}}</td>
+                            <td>{{'{{account.address}}'}}</td>
+                            <td>{{'{{account.employer}}'}}</td>
+                            <td>{{'{{account.email}}'}}</td>
+                            <td>{{'{{account.city}}'}}</td>
+                            <td>{{'{{account.state}}'}}</td>
+							<td><span style="cursor:pointer;" ng-click="editAccount(account.id)" class="glyphicon glyphicon-pencil" aria-hidden="true"></span></td>
+							<td><span style="cursor:pointer;color:#e43309;" ng-click="confirmDelete(account.id)" class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" >Add account</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="control-label">Account number:</label>
+                            <input type="number" class="form-control" ng-model="info.account_number">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Balance:</label>
+                            <input type="text" class="form-control" ng-model="info.balance">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">First name:</label>
+                            <input type="text" class="form-control" ng-model="info.firstname">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Last name:</label>
+                            <input type="text" class="form-control" ng-model="info.lastname">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Age:</label>
+                            <input type="number" class="form-control" ng-model="info.age">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Gender:</label>
+                            <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="inlineFormCustomSelect" ng-model="info.gender">
+                              <option selected value="">Choose...</option>
+                              <option value="M">M</option>
+                              <option value="F">F</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Address:</label>
+                            <input type="text" class="form-control" ng-model="info.address">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Employer:</label>
+                            <input type="text" class="form-control" ng-model="info.employer">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Email:</label>
+                            <input type="email" class="form-control" ng-model="info.email">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">City:</label>
+                            <input type="text" class="form-control" ng-model="info.city">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">State:</label>
+                            <input type="text" class="form-control" ng-model="info.state">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"  class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button ng-show="showAdd" ng-click="addAccount()" type="button" class="btn btn-primary">Add Account</button>
+					          <button ng-show="!showAdd" ng-click="updateAccount()" type="button" class="btn btn-primary">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<div id="deleteConfirm" class="modal fade bs-example-modal-md in" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header"> <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+					<h4 class="modal-title">You are about to delete this account. Do you want to proceed ?</h4> </div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" ng-click="deleteAccount()" class="btn btn-primary">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/validate.js/0.12.0/validate.min.js"></script>
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
