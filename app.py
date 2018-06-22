@@ -10,7 +10,7 @@ db = client.accounts
 
 @application.route('/')
 def showAccountList():
-    return render_template('list.html')
+    return render_template('index.html')
 
 @application.route("/getAccountList",methods=['GET'])
 def getAccountList():
